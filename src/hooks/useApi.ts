@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react';
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import api from '../services/api';
 import { extractSurfaceDataset, normalizeSurfaceDataset } from '../utils/plotData';
 import type { SurfaceDataset } from '../utils/plotData';
