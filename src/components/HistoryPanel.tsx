@@ -60,17 +60,38 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ open, onClose, onSelectOper
         return;
       }
       
+      // Debug: Log token para verificar
+      console.log('🔐 Token presente:', token ? 'Sí' : 'No');
+      console.log('🔐 Primeros caracteres del token:', token?.substring(0, 20));
+      
       const response = await api.get('/history', {
         params: {
           limit: 50
         }
       });
       
+      console.log('✅ Historial obtenido:', response.data);
       setOperations(response.data.operations || []);
       
     } catch (err: any) {
-      console.error('Error fetching history:', err);
-      const errorMessage = err.response?.data?.error || 'Error al cargar el historial';
+      console.error('❌ Error completo:', err);
+      console.error('❌ Response status:', err.response?.status);
+      console.error('❌ Response data:', err.response?.data);
+      console.error('❌ Request headers:', err.config?.headers);
+      
+      let errorMessage = 'Error al cargar el historial';
+      
+      if (err.response?.status === 422) {
+        errorMessage = err.response?.data?.error || err.response?.data?.message || 
+          'Error 422: El servidor no puede procesar la petición. Verifica el backend.';
+      } else if (err.response?.status === 401) {
+        errorMessage = 'No autorizado. Por favor inicia sesión nuevamente.';
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } else {
+        errorMessage = err.response?.data?.error || err.message || errorMessage;
+      }
+      
       setError(errorMessage);
     } finally {
       setLoading(false);
