@@ -21,7 +21,8 @@ import {
   Container,
   Avatar,
   Menu,
-  MenuItem
+  MenuItem,
+  Divider
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { 
