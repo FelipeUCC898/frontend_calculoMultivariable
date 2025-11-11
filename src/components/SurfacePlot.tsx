@@ -445,9 +445,10 @@ const SurfacePlot: React.FC<SurfacePlotProps> = ({
             throw new Error('Datos de gradiente vacíos');
           }
           
-          // Configurar resolución para evitar saturación visual
-          const step = Math.max(1, Math.floor(Math.min(rows, cols) / 8));
-          const maxArrows = Math.min(50, Math.floor((rows * cols) / 10)); // Adaptativo al tamaño de datos
+          // Configurar resolución para mejor visualización del campo vectorial
+          // Con backend generando 15x15 = 225 puntos, mostramos la mayoría
+          const step = Math.max(1, Math.floor(Math.min(rows, cols) / 15)); // Más denso
+          const maxArrows = Math.min(225, rows * cols); // Permitir hasta 225 flechas
           
           console.log(`[SurfacePlot] Grid: ${rows}x${cols}, step: ${step}, max arrows: ${maxArrows}`);
           
@@ -488,8 +489,9 @@ const SurfacePlot: React.FC<SurfacePlotProps> = ({
                   dir.normalize();
                   
                   // Determinar la longitud de la flecha basada en la magnitud del gradiente
+                  // Flechas más grandes para mejor visualización
                   const magnitude = Math.sqrt(u[i][j] * u[i][j] + v[i][j] * v[i][j]);
-                  const arrowLength = Math.min(0.8, Math.max(0.05, magnitude * 0.05));
+                  const arrowLength = Math.min(1.5, Math.max(0.3, magnitude * 0.25));
                   
                   // Validar longitud de flecha razonable
                   if (arrowLength > 0.01) {
