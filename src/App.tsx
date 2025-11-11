@@ -102,6 +102,9 @@ function App() {
   const [meshLoading, setMeshLoading] = useState(false);
   const [gradientDataState, setGradientDataState] = useState<any | null>(null);
   const [gradientLoading, setGradientLoading] = useState(false);
+  const [tangentPlaneData, setTangentPlaneData] = useState<any | null>(null);
+  const [contourData, setContourData] = useState<any | null>(null);
+  const [criticalPointsData, setCriticalPointsData] = useState<any | null>(null);
 
   const plotData = useMemo(
     () => normalizeSurfaceDataset(extractSurfaceDataset((data as any)?.plot_data ?? null)),
@@ -143,7 +146,7 @@ function App() {
     }
 
     // Operaciones que requieren múltiples variables
-    if (operation === 'gradient') {
+    if (['gradient', 'critical_points', 'tangent_plane', 'contour_lines'].includes(operation)) {
       // Extraer variables de la función (básico: x, y, z)
       // Usar regex para encontrar variables (letras que no sean parte de funciones)
       const functionNames = ['sin', 'cos', 'tan', 'exp', 'log', 'ln', 'sqrt', 'abs', 'sinh', 'cosh', 'tanh'];
@@ -153,6 +156,11 @@ function App() {
       });
       const vars = ['x', 'y', 'z', 't', 'u', 'v'].filter(v => funcCopy.includes(v));
       params.variables = vars.length > 0 ? vars : ['x', 'y'];
+      
+      // Para plano tangente, necesitamos un punto
+      if (operation === 'tangent_plane') {
+        params.point = { x: 1, y: 1 }; // Punto por defecto
+      }
     }
     
     if (operation === 'domain') {
@@ -204,9 +212,34 @@ function App() {
         setGradientLoading(false);
       }
     }
+    
+    // Si es operación de puntos críticos, almacenar los datos
+    if (operation === 'critical_points' && result) {
+      const criticalPoints = (result as any).critical_points_analysis?.critical_points || [];
+      setCriticalPointsData(criticalPoints);
+      showNotification(`Encontrados ${criticalPoints.length} puntos críticos`, 'success');
+    }
+    
+    // Si es operación de plano tangente, almacenar los datos
+    if (operation === 'tangent_plane' && result) {
+      const tangentData = (result as any).tangent_plane;
+      if (tangentData && tangentData.plane_mesh) {
+        setTangentPlaneData({ mesh: tangentData.plane_mesh });
+        showNotification('Plano tangente calculado exitosamente', 'success');
+      }
+    }
+    
+    // Si es operación de curvas de nivel, almacenar los datos
+    if (operation === 'contour_lines' && result) {
+      const contours = (result as any).contour_lines;
+      if (contours) {
+        setContourData(contours);
+        showNotification('Curvas de nivel generadas exitosamente', 'success');
+      }
+    }
 
     // Mostrar resultado o error
-    if (result && !error) {
+    if (result && !error && !['gradient', 'critical_points', 'tangent_plane', 'contour_lines'].includes(operation)) {
       showNotification('Operación completada exitosamente', 'success');
     } else if (error) {
       showNotification(error, 'error');
@@ -243,6 +276,9 @@ function App() {
     setLastOperation(null);
     setMeshDataState(null);
     setGradientDataState(null);
+    setTangentPlaneData(null);
+    setContourData(null);
+    setCriticalPointsData(null);
     reset();
   };
 
@@ -581,9 +617,22 @@ function App() {
                   data={plotData || undefined}
                   meshData={meshData || undefined}
                   gradientData={lastOperation === 'gradient' ? gradientDataState?.gradient?.vector_field : null}
+                  tangentPlaneData={lastOperation === 'tangent_plane' ? tangentPlaneData : null}
+                  contourData={lastOperation === 'contour_lines' ? contourData : null}
+                  criticalPoints={lastOperation === 'critical_points' ? criticalPointsData : null}
+                  showGradient={lastOperation === 'gradient'}
+                  showTangentPlane={lastOperation === 'tangent_plane'}
+                  showContours={lastOperation === 'contour_lines'}
+                  showCriticalPoints={lastOperation === 'critical_points'}
                   title={
                     lastOperation === 'gradient'
                       ? 'Superficie + Campo de Gradiente'
+                      : lastOperation === 'tangent_plane'
+                      ? 'Superficie + Plano Tangente'
+                      : lastOperation === 'contour_lines'
+                      ? 'Superficie + Curvas de Nivel'
+                      : lastOperation === 'critical_points'
+                      ? 'Superficie + Puntos Críticos'
                       : mathFunction || 'Superficie 3D'
                   }
                 />

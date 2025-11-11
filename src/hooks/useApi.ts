@@ -24,7 +24,10 @@ export type MathOperation =
   | 'gradient' 
   | 'limit' 
   | 'lagrange' 
-  | 'domain';
+  | 'domain'
+  | 'critical_points'
+  | 'tangent_plane'
+  | 'contour_lines';
 
 /**
  * Estructura de la respuesta del backend Flask
@@ -147,10 +150,33 @@ export const useApi = () => {
         if (typeof params.respect_to === 'string') {
           payload.respect_to = [params.respect_to];
         }
+      } else if (operation === 'critical_points') {
+        // Puntos críticos necesita función y variables
+        payload = {
+          function: params.function,
+          variables: params.variables || ['x', 'y']
+        };
+      } else if (operation === 'tangent_plane') {
+        // Plano tangente necesita función, variables y punto
+        payload = {
+          function: params.function,
+          variables: params.variables || ['x', 'y'],
+          point: params.point || { x: 0, y: 0 }
+        };
+      } else if (operation === 'contour_lines') {
+        // Curvas de nivel necesita función y variables
+        payload = {
+          function: params.function,
+          variables: params.variables || ['x', 'y'],
+          num_levels: 10
+        };
       }
       
+      // Convertir nombres de operación para endpoints (guiones en lugar de guiones bajos)
+      const endpoint = operation.replace(/_/g, '-');
+      
       // Realizar la petición POST al endpoint correspondiente
-      const response = await apiClient.post<ApiResponse>(`/${operation}`, payload);
+      const response = await apiClient.post<ApiResponse>(`/${endpoint}`, payload);
       
       // Normalizar la respuesta para que sea consistente
       const normalizedData: ApiResponse = {

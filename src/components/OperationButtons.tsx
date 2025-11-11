@@ -68,6 +68,27 @@ const operations: OperationConfig[] = [
     color: vercelColors.gray[200],
     description: 'Determina el dominio y rango de la función',
   },
+  {
+    id: 'critical_points',
+    label: 'Puntos Críticos',
+    symbol: '★',
+    color: vercelColors.accent.yellow,
+    description: 'Encuentra y clasifica puntos críticos (máximos, mínimos, puntos de silla)',
+  },
+  {
+    id: 'tangent_plane',
+    label: 'Plano Tangente',
+    symbol: '□',
+    color: vercelColors.accent.orange,
+    description: 'Calcula el plano tangente a la superficie en un punto',
+  },
+  {
+    id: 'contour_lines',
+    label: 'Curvas de Nivel',
+    symbol: '≈',
+    color: vercelColors.accent.teal,
+    description: 'Genera curvas de nivel (contour lines) de la función',
+  },
 ];
 
 const OperationButtons: React.FC<OperationButtonsProps> = ({
