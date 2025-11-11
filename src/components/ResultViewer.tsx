@@ -178,8 +178,16 @@ const ResultViewer: React.FC<ResultViewerProps> = ({
     symbolic_form = result.gradient.symbolic?.join(', ') || '';
     numerical_value = result.gradient.value ? result.gradient.value[0] : null;
   } else if (result.limit_result) {
-    mainResult = result.limit_result.limit;
-    symbolic_form = result.limit_result.limit;
+    // Detectar si es límite multivariable o univariable
+    if (result.limit_result.paths_analysis && result.limit_result.paths_analysis.length > 0) {
+      // Límite multivariable con análisis de trayectorias
+      mainResult = result.limit_result.limit_value;
+      symbolic_form = result.limit_result.limit_value;
+    } else {
+      // Límite univariable simple
+      mainResult = result.limit_result.limit;
+      symbolic_form = result.limit_result.limit;
+    }
   } else if (result.optimization_result) {
     // Manejar caso degenerado: familia infinita de soluciones
     if (result.optimization_result.infinite_family) {
@@ -287,6 +295,121 @@ const ResultViewer: React.FC<ResultViewerProps> = ({
             <Box key={idx} sx={{ mb: 1 }}>
               <MathExpression expression={comp} />
             </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Análisis de Límites Multivariables - Trayectorias */}
+      {result.limit_result && result.limit_result.paths_analysis && (
+        <Box sx={{ mb: 3 }}>
+          {/* Explicación del límite */}
+          {result.limit_result.explanation && (
+            <Box sx={{ mb: 2, p: 2, backgroundColor: result.limit_result.limit_exists ? `${theme.palette.success.main}15` : `${theme.palette.warning.main}15`, borderRadius: '8px', border: `1px solid ${result.limit_result.limit_exists ? theme.palette.success.main : theme.palette.warning.main}55` }}>
+              <Typography sx={{ color: result.limit_result.limit_exists ? theme.palette.success.main : theme.palette.warning.main, fontWeight: 500 }}>
+                {result.limit_result.explanation}
+              </Typography>
+            </Box>
+          )}
+
+          <Typography 
+            variant="subtitle2" 
+            sx={{ color: theme.palette.text.secondary, mb: 2, fontWeight: 500 }}
+          >
+            Análisis por Trayectorias ({result.limit_result.total_paths_tested} caminos analizados):
+          </Typography>
+          
+          {result.limit_result.paths_analysis.map((path: any, idx: number) => (
+            <Accordion 
+              key={idx}
+              sx={{ 
+                backgroundColor: 'rgba(10,10,10,0.5)',
+                border: `1px solid ${theme.palette.primary.main}22`,
+                mb: 1,
+                '&:before': { display: 'none' }
+              }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMore sx={{ color: theme.palette.primary.main }} />}
+                sx={{ 
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.02)' }
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                  <Typography sx={{ color: theme.palette.primary.main, fontWeight: 500, flex: 1 }}>
+                    {path.path}
+                  </Typography>
+                  <Chip 
+                    label={path.limit || path.error || 'N/A'} 
+                    size="small" 
+                    sx={{ 
+                      backgroundColor: path.error ? `${theme.palette.error.main}22` : `${theme.palette.success.main}22`,
+                      color: path.error ? theme.palette.error.main : theme.palette.success.main,
+                      fontWeight: 500,
+                      fontFamily: "'Fira Code', monospace"
+                    }} 
+                  />
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box sx={{ pl: 2 }}>
+                  {/* Descripción */}
+                  <Typography sx={{ color: theme.palette.text.secondary, mb: 1, fontSize: '0.9rem' }}>
+                    {path.description}
+                  </Typography>
+                  
+                  {/* Forma simbólica */}
+                  {path.symbolic && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: '0.85rem', mb: 0.5 }}>
+                        Expresión simbólica:
+                      </Typography>
+                      <MathExpression expression={path.symbolic} />
+                    </Box>
+                  )}
+                  
+                  {/* Aproximación numérica */}
+                  {path.numerical_approach && path.numerical_approach.length > 0 && (
+                    <Box>
+                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: '0.85rem', mb: 1 }}>
+                        Valores de aproximación:
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        {path.numerical_approach.map((approx: any, aIdx: number) => (
+                          <Box 
+                            key={aIdx}
+                            sx={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between',
+                              p: 1,
+                              backgroundColor: 'rgba(255,255,255,0.03)',
+                              borderRadius: '4px',
+                              fontFamily: "'Fira Code', monospace",
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            <Typography sx={{ color: theme.palette.info.main }}>
+                              {Object.entries(approx.point).map(([k, v]) => `${k}=${v}`).join(', ')}
+                            </Typography>
+                            <Typography sx={{ color: theme.palette.success.main, fontWeight: 600 }}>
+                              → {approx.value}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+                  
+                  {/* Error */}
+                  {path.error && (
+                    <Box sx={{ mt: 1, p: 1, backgroundColor: `${theme.palette.error.main}15`, borderRadius: '4px' }}>
+                      <Typography sx={{ color: theme.palette.error.main, fontSize: '0.85rem' }}>
+                        Error: {path.error}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
           ))}
         </Box>
       )}

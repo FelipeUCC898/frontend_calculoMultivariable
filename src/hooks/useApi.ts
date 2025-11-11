@@ -49,12 +49,29 @@ export interface ApiResponse {
     value?: number[];
   };
   
-  // Respuesta de /limit
+  // Respuesta de /limit (univariable)
   limit_result?: {
     function: string;
-    variable: string;
-    limit_to: string;
-    limit: string;
+    variable?: string;
+    limit_to?: string;
+    limit?: string;
+    // Respuesta multivariable
+    point?: Record<string, number>;
+    limit_exists?: boolean;
+    limit_value?: string;
+    explanation?: string;
+    paths_analysis?: Array<{
+      path: string;
+      description: string;
+      limit: string;
+      symbolic?: string;
+      numerical_approach?: Array<{
+        point: Record<string, number>;
+        value: number;
+      }>;
+      error?: string;
+    }>;
+    total_paths_tested?: number;
   };
   
   // Respuesta de /lagrange
@@ -138,13 +155,30 @@ export const useApi = () => {
           variables: params.variables || ['x', 'y']
         };
       } else if (operation === 'limit') {
-        // Limit necesita variable y limit_to
-        payload = {
-          function: params.function,
-          variable: params.respect_to || 'x',
-          limit_to: params.point?.toString() || '0',
-          direction: params.direction
-        };
+        // Detectar si es multivariable o univariable
+        const functionVars = params.variables || [];
+        
+        if (functionVars.length > 1) {
+          // Límite multivariable - análisis de trayectorias
+          const pointObj: Record<string, number> = {};
+          functionVars.forEach(v => {
+            pointObj[v] = 0; // Por defecto aproxima a (0, 0, ...)
+          });
+          
+          payload = {
+            function: params.function,
+            variables: functionVars,
+            point: pointObj
+          };
+        } else {
+          // Límite univariable tradicional
+          payload = {
+            function: params.function,
+            variable: params.respect_to || functionVars[0] || 'x',
+            limit_to: params.point?.toString() || '0',
+            direction: params.direction
+          };
+        }
       } else if (operation === 'integral') {
         // Integral puede tener respect_to como string o array
         if (typeof params.respect_to === 'string') {

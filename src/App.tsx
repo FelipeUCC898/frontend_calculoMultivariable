@@ -141,8 +141,25 @@ function App() {
     };
 
     // Operaciones que requieren variable específica
-    if (['derivative', 'integral', 'limit'].includes(operation)) {
+    if (['derivative', 'integral'].includes(operation)) {
       params.respect_to = variable;
+    }
+
+    // Límites: detectar si es multivariable o univariable
+    if (operation === 'limit') {
+      // Extraer variables de la función
+      const functionNames = ['sin', 'cos', 'tan', 'exp', 'log', 'ln', 'sqrt', 'abs', 'sinh', 'cosh', 'tanh'];
+      const functionNamesRegex = new RegExp(functionNames.join('|'), 'g');
+      const cleanFunction = mathFunction.replace(functionNamesRegex, '');
+      const foundVariables = Array.from(new Set(cleanFunction.match(/[a-z]/g) || []));
+      
+      if (foundVariables.length > 1) {
+        // Límite multivariable
+        params.variables = foundVariables.sort();
+      } else {
+        // Límite univariable
+        params.respect_to = variable;
+      }
     }
 
     // Operaciones que requieren múltiples variables
