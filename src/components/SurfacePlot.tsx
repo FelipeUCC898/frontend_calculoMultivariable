@@ -470,10 +470,10 @@ const SurfacePlot: React.FC<SurfacePlotProps> = ({
                   Number.isFinite(u[i][j]) &&
                   Number.isFinite(v[i][j])) {
                 
-                // Posición de origen (punto en la superficie)
+                // Posición de origen (punto ENCIMA de la superficie)
                 const origin = new THREE.Vector3(
                   x[i][j],
-                  z[i][j],  // Usar z como coordenada Y para la superficie
+                  z[i][j] + 0.15,  // Añadir offset para que aparezca ENCIMA de la superficie
                   y[i][j]   // Usar y como coordenada Z
                 );
                 
