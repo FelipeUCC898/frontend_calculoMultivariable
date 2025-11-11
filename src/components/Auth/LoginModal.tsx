@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Close, PersonAdd, Login as LoginIcon } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import api from '../../services/api';
 
 interface LoginModalProps {
   open: boolean;
@@ -59,7 +59,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSuccess }
     setLoading(true);
     
     try {
-      const response = await axios.post('/api/login', {
+      const response = await api.post('/login', {
         email: loginForm.email,
         password: loginForm.password
       });
@@ -101,14 +101,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSuccess }
     setLoading(true);
     
     try {
-      const response = await axios.post('/api/register', {
+      const response = await api.post('/register', {
         nombre: registerForm.nombre,
         email: registerForm.email,
         password: registerForm.password
       });
       
       // Registro exitoso, ahora hacer login automático
-      const loginResponse = await axios.post('/api/login', {
+      const loginResponse = await api.post('/login', {
         email: registerForm.email,
         password: registerForm.password
       });

@@ -6,7 +6,9 @@
 import axios from 'axios';
 
 // Configurar URL base según el entorno
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// En producción (Vercel): https://backend-api-calculo-multivariado.onrender.com/api
+// En desarrollo: http://localhost:5000/api
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Crear instancia de axios
 const api = axios.create({
@@ -14,6 +16,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Cambiado a false para producción con CORS simple
 });
 
 // Interceptor para agregar token JWT automáticamente

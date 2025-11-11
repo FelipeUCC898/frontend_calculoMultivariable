@@ -26,7 +26,7 @@ import {
   Delete
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import api from '../services/api';
 
 interface HistoryPanelProps {
   open: boolean;
@@ -60,10 +60,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ open, onClose, onSelectOper
         return;
       }
       
-      const response = await axios.get('/api/history', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+      const response = await api.get('/history', {
         params: {
           limit: 50
         }
