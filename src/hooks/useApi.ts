@@ -164,10 +164,15 @@ export const useApi = () => {
           point: params.point || { x: 0, y: 0 }
         };
       } else if (operation === 'contour_lines') {
-        // Curvas de nivel necesita función y variables
+        // Curvas de nivel necesita expression, variables y range
         payload = {
-          function: params.function,
+          expression: params.function,
           variables: params.variables || ['x', 'y'],
+          range: {
+            x: [-5, 5],
+            y: [-5, 5],
+            resolution: 100
+          },
           num_levels: 10
         };
       }

@@ -192,6 +192,12 @@ function App() {
       params.variables = ['x', 'y']; // Por ahora fijo, podría extraerse automáticamente
     }
 
+    // Limpiar visualizaciones anteriores antes de ejecutar nueva operación
+    setGradientDataState(null);
+    setTangentPlaneData(null);
+    setContourData(null);
+    setCriticalPointsData(null);
+    
     // Ejecutar operación
     setLastOperation(operation);
     const result = await executeOperation(operation, params);
